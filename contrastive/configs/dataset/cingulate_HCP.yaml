@@ -1,4 +1,5 @@
 # @package _global_
+dataset_name: cingulate_HCP_half_1
 pickle_normal: /neurospin/dico/data/deep_folding/current/datasets/hcp/crops/2mm/CINGULATE/mask/Rskeleton.pkl
 numpy_all: /neurospin/dico/data/deep_folding/current/datasets/hcp/crops/2mm/CINGULATE/mask/Rskeleton.npy
 subjects_all: /neurospin/dico/data/deep_folding/current/datasets/hcp/crops/2mm/CINGULATE/mask/Rskeleton_subject.csv
@@ -16,5 +17,5 @@ subject_labels_file: /neurospin/dico/jchavas/Runs/45_forcing_with_betaVAE_latent
 subject_column_name: 'Subject'
 #label_names: ["NEOFAC_A", "NEOFAC_O", "NEOFAC_C", "NEOFAC_N", "NEOFAC_E"]
 #label_names: ["NEOFAC_C"]
-# label_names: ["Gender"]
-label_names: ["latent_0", "latent_1", "latent_2", "latent_3"]
+#label_names: ["Gender"]
+n_max: 1080

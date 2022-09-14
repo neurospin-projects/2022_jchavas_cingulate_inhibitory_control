@@ -85,12 +85,12 @@ def train(config):
 
 
     # copies some of the config parameters in a yaml file easily accessible
-    keys_to_keep = ['dataset', 'numpy_all', 'nb_subjects', 'model', 'with_labels', 
+    keys_to_keep = ['dataset_name', 'nb_subjects', 'model', 'with_labels', 
     'input_size', 'temperature_initial', 'temperature', 'sigma', 'drop_rate', 'depth_decoder',
     'mode', 'foldlabel', 'fill_value', 'patch_size', 'max_angle', 'checkerboard_size', 'keep_bottom',
     'growth_rate', 'block_config', 'num_init_features', 'num_representation_features', 'num_outputs',
     'environment', 'batch_size', 'pin_mem', 'partition', 'lr', 'weight_decay', 'max_epochs',
-    'early_stopping_patience', 'seed', 'backbone_name']
+    'early_stopping_patience', 'seed', 'backbone_name', 'n_max']
 
     create_accessible_config(keys_to_keep, os.getcwd()+"/.hydra/config.yaml")
 
@@ -115,22 +115,26 @@ def train(config):
     else:
         raise ValueError("Wrong combination of 'mode' and 'model'")
 
-    summary(model, tuple(config.input_size), device="cpu")
 
-    # early_stop_callback = EarlyStopping(monitor="val_loss",
-    #      patience=config.early_stopping_patience)
+    if config.backbone_name != 'pointnet':
+        summary(model, tuple(config.input_size), device="cpu")
+    else:
+        summary(model, device='cpu')
+
+    early_stop_callback = EarlyStopping(monitor="val_loss",
+          patience=config.early_stopping_patience)
 
     trainer = pl.Trainer(
         gpus=1,
         max_epochs=config.max_epochs,
-        # callbacks=[early_stop_callback],
+        callbacks=[early_stop_callback],
         logger=tb_logger,
         flush_logs_every_n_steps=config.nb_steps_per_flush_logs,
         log_every_n_steps=config.log_every_n_steps)
 
     trainer.fit(model, data_module, ckpt_path=config.checkpoint_path)
     log.info("Fitting is done")
-    log.info(f"Number of hooks: {len(model.save_output.outputs)}")
+    log.info(f"Number of hooks: {len(model.save_output.outputs)} ; {len(model.hook_handles)}")
 
 
 if __name__ == "__main__":
