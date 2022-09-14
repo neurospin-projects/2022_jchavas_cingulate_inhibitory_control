@@ -5,7 +5,7 @@ import omegaconf
 from contrastive.evaluation.generate_embeddings import compute_embeddings
 from contrastive.evaluation.train_multiple_classifiers import train_classifiers
 
-from sklearn.utils.testing import ignore_warnings
+from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 
@@ -92,7 +92,7 @@ overwrite to True if you still want to compute them.")
 
 
 embeddings_pipeline(
-    "/volatile/jc225751/Runs/45_forcing_with_betaVAE_latents/Output/2022-09-12",
+    "/volatile/jc225751/Runs/45_forcing_with_betaVAE_latents/Output/pure_contrastive",
     dataset='cingulate_ACCpatterns',
     classifier_name='svm',
     overwrite=True)
