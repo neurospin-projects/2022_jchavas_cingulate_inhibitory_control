@@ -18,4 +18,5 @@ subject_column_name: 'Subject'
 #label_names: ["NEOFAC_A", "NEOFAC_O", "NEOFAC_C", "NEOFAC_N", "NEOFAC_E"]
 #label_names: ["NEOFAC_C"]
 #label_names: ["Gender"]
+label_names: ["latent_0", "latent_1", "latent_2", "latent_3"]
 n_max: 1080
