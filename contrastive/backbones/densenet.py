@@ -294,8 +294,10 @@ class DenseNet(pl.LightningModule):
             out = torch.flatten(out, 1)
 
             out = self.hidden_representation(out)
+            out_representation = out
             out = F.relu(out, inplace=True)
             out = self.head_projection(out)
+            out = torch.cat((out, out_representation), dim=1)
         elif self.mode == "decoder":
             out = F.relu(features, inplace=True)
             out = F.adaptive_avg_pool3d(out, 1)

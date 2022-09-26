@@ -282,27 +282,29 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
     def forward(self, z_i, z_j, labels):
         N = len(z_i)
-        D = z_i.shape[1]
+        D = int(z_i.shape[1]/2)
         assert N == len(labels), "Unexpected labels length: %i"%len(labels)
 
         # We compute the pure SimCLR loss
-        z_i_pure_contrastive = z_i
-        z_j_pure_contrastive = z_j
+        z_i_pure_contrastive = z_i[:,0:D]
+        z_j_pure_contrastive = z_j[:,0:D]
         loss_pure_contrastive = self.forward_pure_contrastive(
                                     z_i_pure_contrastive,
                                     z_j_pure_contrastive
                                     )
 
         # We compute the generalized supervised loss
-        z_i_supervised = z_i
-        z_j_supervised = z_j
+        z_i_supervised = z_i[:,0:D]
+        z_j_supervised = z_j[:,0:D]
         loss_supervised, weights = self.forward_supervised(
                                         z_i_supervised,
                                         z_j_supervised,
                                         labels)
 
         # We compute the L1 norm to enforce sparsity
-        loss_L1 = self.forward_L1(z_i_supervised, z_j_supervised)
+        z_i_loss_L1 = z_i[:,D:(2*D)]
+        z_j_loss_L1 = z_j[:,D:(2*D)]
+        loss_L1 = self.forward_L1(z_i_loss_L1, z_j_loss_L1)
 
 
         # We compute matrices for tensorboard displays
@@ -310,8 +312,8 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
             self.compute_parameters_for_display(z_i, z_j)
 
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
-                        + (1-self.proportion_pure_contrastive)*loss_supervised
-                        # + loss_L1
+                        + (1-self.proportion_pure_contrastive)*loss_supervised \
+                        + loss_L1
 
         if self.return_logits:
             return loss_combined, loss_supervised.detach(), \

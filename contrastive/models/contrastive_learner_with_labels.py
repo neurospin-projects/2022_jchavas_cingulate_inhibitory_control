@@ -192,9 +192,9 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
                 # First views of the whole batch
                 inputs = inputs.cuda()
                 model = self.cuda()
-                X_i = model.forward(inputs[:, 0, :])
+                X_i = model.forward(inputs[:, 0, :])[:,0:self.config.num_representation_features]
                 # Second views of the whole batch
-                X_j = model.forward(inputs[:, 1, :])
+                X_j = model.forward(inputs[:, 1, :])[:,0:self.config.num_representation_features]
 
                 # We now concatenate the embeddings
 
