@@ -177,6 +177,7 @@ def plot_scatter_matrix_with_labels(embeddings, labels, buffer, jitter=False):
                             dimensions=df.columns[0:-1],
                             color=df.columns[-1],
                             opacity=0.5)
+    fig = fig.update_traces(marker_size=2)
     png_file = f"{temp_dir}/scatter_matrix.png"
     fig.write_image(png_file, engine="kaleido")
 
