@@ -250,11 +250,19 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
         return loss_label, weights
 
+    def batch_normalize(self, x):
+        _,D = x.shape
+        x_mean = x.mean(dim=0).reshape(1,D)
+        x_std = x.std(dim=0).reshape(1,D)
+        return (x-x_mean)/x_std
+
     def forward_L1(self, z_i, z_j):
         N = len(z_i)
         # z_i = func.normalize(z_i, p=2, dim=-1) # dim [N, D]
         # z_j = func.normalize(z_j, p=2, dim=-1) # dim [N, D]
-
+        
+        z_i = self.batch_normalize(z_i)
+        z_j = self.batch_normalize(z_j)
         loss_i = torch.linalg.norm(z_i, ord=1, dim=-1).sum() / N
         loss_j = torch.linalg.norm(z_j, ord=1, dim=-1).sum() / N
 
