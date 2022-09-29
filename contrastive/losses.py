@@ -258,11 +258,11 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
     def forward_L1(self, z_i, z_j):
         N = len(z_i)
-        # z_i = func.normalize(z_i, p=2, dim=-1) # dim [N, D]
-        # z_j = func.normalize(z_j, p=2, dim=-1) # dim [N, D]
+        z_i = func.normalize(z_i, p=2, dim=-1) # dim [N, D]
+        z_j = func.normalize(z_j, p=2, dim=-1) # dim [N, D]
         
-        z_i = self.batch_normalize(z_i)
-        z_j = self.batch_normalize(z_j)
+        # z_i = self.batch_normalize(z_i)
+        # z_j = self.batch_normalize(z_j)
         loss_i = torch.linalg.norm(z_i, ord=1, dim=-1).sum() / N
         loss_j = torch.linalg.norm(z_j, ord=1, dim=-1).sum() / N
 
@@ -321,7 +321,7 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
                         + (1-self.proportion_pure_contrastive)*loss_supervised \
-                        + 0.1*loss_L1
+                        + 0.3*loss_L1
 
         if self.return_logits:
             return loss_combined, loss_supervised.detach(), \
