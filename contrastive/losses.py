@@ -253,7 +253,7 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
     def batch_normalize(self, x):
         _,D = x.shape
         x_mean = x.mean(dim=0).reshape(1,D)
-        x_std = x.std(dim=0).reshape(1,D)
+        x_std = x.std(dim=0).reshape(1,D)+0.0001
         return (x-x_mean)/x_std
 
     def forward_L1(self, z_i, z_j):
@@ -321,7 +321,7 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
                         + (1-self.proportion_pure_contrastive)*loss_supervised \
-                        + loss_L1
+                        + 0.1*loss_L1
 
         if self.return_logits:
             return loss_combined, loss_supervised.detach(), \
