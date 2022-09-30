@@ -321,7 +321,7 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
                         + (1-self.proportion_pure_contrastive)*loss_supervised \
-                        + 0.3*loss_L1
+                        + 0.1*loss_L1
 
         if self.return_logits:
             return loss_combined, loss_supervised.detach(), \
