@@ -334,12 +334,14 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
         sim_zii, sim_zij, sim_zjj, correct_pairs = \
             self.compute_parameters_for_display(z_i_pure_contrastive, z_j_pure_contrastive)
 
+        loss_sparse = loss_L1 + 0.2*loss_dictionary
+
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
                         + (1-self.proportion_pure_contrastive)*loss_supervised \
-                        + loss_L1 + 0.2*loss_dictionary
+                        + loss_sparse
 
         if self.return_logits:
-            return loss_combined, loss_dictionary.detach(), \
+            return loss_combined, loss_sparse.detach(), \
                    sim_zij, sim_zii, sim_zjj, correct_pairs, weights
 
         return loss_combined
