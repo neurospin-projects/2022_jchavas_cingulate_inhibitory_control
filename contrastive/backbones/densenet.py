@@ -176,8 +176,14 @@ class DenseNet(pl.LightningModule):
             # Linear layer
             self.classifier = nn.Linear(num_features, num_classes)
         elif (self.mode == "encoder") or (self.mode == 'evaluation'):
+
+            self.features2 = nn.Linear(num_features, self.num_representation_features)
+
             self.hidden_representation = nn.Linear(
-                num_features, self.num_representation_features)
+                self.num_representation_features, self.num_representation_features)
+
+            self.backward_linear = nn.Linear(
+                self.num_representation_features, self.num_representation_features)
 
             if projection_head_type == "non-linear":
                 projection_head = []
@@ -187,7 +193,7 @@ class DenseNet(pl.LightningModule):
                 projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
                 projection_head.append(('Norm%s' %i, nn.BatchNorm1d(output_size, track_running_stats=False)))
                 projection_head.append(('ReLU%s' %i, nn.ReLU()))
-                projection_head.append(('Linear Output', nn.Linear(input_size, output_size)))
+                projection_head.append(('Linear Output', nn.Linear(output_size, output_size)))
                 projection_head.append(('Norm Output', nn.BatchNorm1d(output_size, track_running_stats=False)))   
                 self.head_projection = nn.Sequential(OrderedDict(projection_head))
             elif projection_head_type == "linear":
@@ -292,12 +298,18 @@ class DenseNet(pl.LightningModule):
             out = F.relu(features, inplace=True)
             out = F.adaptive_avg_pool3d(out, 1)
             out = torch.flatten(out, 1)
+            out = self.features2(out)
+            out_backbone = out
 
             out = self.hidden_representation(out)
             out_representation = out
-            out = F.relu(out, inplace=True)
+            x = self.backward_linear(out)
+            out = F.relu(out)
+
             out = self.head_projection(out)
-            out = torch.cat((out, out_representation), dim=1)
+
+            out = torch.cat((out, out_representation, out_backbone, x), dim=1)
+            # print(f"shapes = {out.shape}, {out_representation.shape}, {out_backbone.shape} and {x.shape}")
         elif self.mode == "decoder":
             out = F.relu(features, inplace=True)
             out = F.adaptive_avg_pool3d(out, 1)

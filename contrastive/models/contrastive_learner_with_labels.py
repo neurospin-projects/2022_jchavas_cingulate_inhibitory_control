@@ -41,6 +41,7 @@ import numpy as np
 import torch
 from sklearn.manifold import TSNE
 from toolz.itertoolz import first
+from contrastive.utils.plots.visualize_images import plot_scatter_matrix
 
 from contrastive.models.contrastive_learner import ContrastiveLearner
 from contrastive.losses import GeneralizedSupervisedNTXenLoss
@@ -265,12 +266,12 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
                 inputs = inputs.cuda()
                 model = self.cuda()
                 model.forward(inputs[:, 0, :])
-                X_i = first(self.save_output.outputs.values())
+                X_i = list(self.save_output.outputs.values())[1]
 
                 # We then compute the embeddings for the second views
                 # of the whole batch
                 model.forward(inputs[:, 1, :])
-                X_j = first(self.save_output.outputs.values())
+                X_j = list(self.save_output.outputs.values())[1]
 
                 # We now concatenate the embeddings
 
@@ -323,6 +324,29 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
         # Returns tsne embeddings
         return X_tsne, labels
 
+    def plot_scatter_matrices(self):
+        """Plots scatter matrices of output and representations spaces"""
+        # Makes scatter matrix of output space
+        r = self.compute_outputs_skeletons(
+            self.sample_data.train_dataloader())
+        X = r[0] # First element of tuple
+        scatter_matrix_outputs = plot_scatter_matrix(X, buffer=True)
+        self.logger.experiment.add_image(
+            'scatter_matrix_outputs',
+            scatter_matrix_outputs,
+            self.current_epoch)
+
+        # Makes scatter matrix of representation space
+        r = self.compute_representations(
+            self.sample_data.train_dataloader())
+        X = r[0] # First element of tuple
+        scatter_matrix_representations = plot_scatter_matrix(
+            X, buffer=True)
+        self.logger.experiment.add_image(
+            'scatter_matrix_representations',
+            scatter_matrix_representations,
+            self.current_epoch)
+
     def plotting_now(self):
         if self.config.nb_epochs_per_tSNE <= 0:
             return False
@@ -333,7 +357,7 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
             return False
 
     def plotting_matrices_now(self):
-        if  self.current_epoch % 50 == 0 \
+        if  self.current_epoch % 5 == 0 \
                     or self.current_epoch >= self.config.max_epochs:
             return True
         else:

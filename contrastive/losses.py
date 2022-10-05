@@ -258,13 +258,24 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
     def forward_L1(self, z_i, z_j):
         N = len(z_i)
-        z_i = func.normalize(z_i, p=2, dim=-1) # dim [N, D]
-        z_j = func.normalize(z_j, p=2, dim=-1) # dim [N, D]
-        
-        # z_i = self.batch_normalize(z_i)
-        # z_j = self.batch_normalize(z_j)
+        # z_i = func.normalize(z_i, p=2, dim=-1) # dim [N, D]
+        # z_j = func.normalize(z_j, p=2, dim=-1) # dim [N, D]
         loss_i = torch.linalg.norm(z_i, ord=1, dim=-1).sum() / N
         loss_j = torch.linalg.norm(z_j, ord=1, dim=-1).sum() / N
+
+        return loss_i+loss_j
+
+    def forward_dictionary(self, z_i, z_j):
+        N = len(z_i)
+        F = z_i.shape[1]//2
+
+        f_i = z_i[:,0:F]
+        x_i = z_j[:,F:]
+        loss_i = torch.linalg.norm((x_i-f_i), ord=2, dim=-1).sum() / N
+
+        f_j = z_j[:,0:F]
+        x_j = z_j[:,F:]
+        loss_j = torch.linalg.norm((x_j-f_j), ord=2, dim=-1).sum() / N
 
         return loss_i+loss_j
 
@@ -290,7 +301,7 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
     def forward(self, z_i, z_j, labels):
         N = len(z_i)
-        D = int(z_i.shape[1]/2)
+        D = 30
         assert N == len(labels), "Unexpected labels length: %i"%len(labels)
 
         # We compute the pure SimCLR loss
@@ -314,6 +325,10 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
         z_j_loss_L1 = z_j[:,D:(2*D)]
         loss_L1 = self.forward_L1(z_i_loss_L1, z_j_loss_L1)
 
+        # We compute the reverse linear to match W*representation with feature layer
+        z_i_dictionary = z_i[:,(2*D):]
+        z_j_dictionary = z_j[:,(2*D):]
+        loss_dictionary = self.forward_dictionary(z_i_dictionary, z_j_dictionary)
 
         # We compute matrices for tensorboard displays
         sim_zii, sim_zij, sim_zjj, correct_pairs = \
@@ -321,10 +336,10 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
                         + (1-self.proportion_pure_contrastive)*loss_supervised \
-                        + 0.1*loss_L1
+                        + loss_L1 + 0.2*loss_dictionary
 
         if self.return_logits:
-            return loss_combined, loss_supervised.detach(), \
+            return loss_combined, loss_dictionary.detach(), \
                    sim_zij, sim_zii, sim_zjj, correct_pairs, weights
 
         return loss_combined
