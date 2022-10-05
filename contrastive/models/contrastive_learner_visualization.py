@@ -63,6 +63,44 @@ class ContrastiveLearner_Visualization(ContrastiveLearner):
             self.visu_anatomist = Visu_Anatomist()
         self.eval()
 
+    def compute_representations(self, loader):
+        """Computes representations for each crop.
+
+        Representation are before the projection head"""
+
+        # Initialization
+        X = torch.zeros([0, self.config.num_representation_features]).cpu()
+        filenames_list = []
+
+        # Computes representation (without gradient computation)
+        with torch.no_grad():
+            for (inputs, filenames) in loader:
+                # First views of the whole batch
+                inputs = inputs.cuda()
+                if self.config.backbone_name == 'pointnet':
+                    inputs = torch.squeeze(inputs).to(torch.float)
+                model = self.cuda()
+                input_i = inputs[:, 0, :]
+                input_j = inputs[:, 1, :]
+                model.forward(input_i)
+                X_i = list(self.save_output.outputs.values())[1]
+                # Second views of the whole batch
+                model.forward(input_j)
+                X_j = list(self.save_output.outputs.values())[1]
+                #print("representations", X_i.shape, X_j.shape)
+                # First views and second views are put side by side
+                X_reordered = torch.cat([X_i, X_j], dim=-1)
+                X_reordered = X_reordered.view(-1, X_i.shape[-1])
+                X = torch.cat((X, X_reordered.cpu()), dim=0)
+                #print(f"filenames = {filenames}")
+                filenames_duplicate = [
+                    item for item in filenames
+                    for repetitions in range(2)]
+                filenames_list = filenames_list + filenames_duplicate
+                del inputs
+
+        return X, filenames_list
+
     def custom_histogram_adder(self):
 
         # iterating through all parameters
