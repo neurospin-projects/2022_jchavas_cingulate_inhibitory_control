@@ -55,17 +55,6 @@ except ImportError:
     print("INFO: you are not in a brainvisa environment. Probably OK.")
 
 
-class SaveOutput:
-    def __init__(self):
-        self.outputs = {}
-
-    def __call__(self, module, module_in, module_out):
-        self.outputs[module] = module_out.cpu()
-
-    def clear(self):
-        self.outputs = {}
-
-
 class ContrastiveLearner_WithLabels(ContrastiveLearner):
 
     def __init__(self, config, sample_data):
@@ -266,12 +255,12 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
                 inputs = inputs.cuda()
                 model = self.cuda()
                 model.forward(inputs[:, 0, :])
-                X_i = list(self.save_output.outputs.values())[1]
+                X_i = list(self.save_output.outputs.values())[0]
 
                 # We then compute the embeddings for the second views
                 # of the whole batch
                 model.forward(inputs[:, 1, :])
-                X_j = list(self.save_output.outputs.values())[1]
+                X_j = list(self.save_output.outputs.values())[0]
 
                 # We now concatenate the embeddings
 

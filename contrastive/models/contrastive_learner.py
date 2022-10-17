@@ -125,7 +125,7 @@ class ContrastiveLearner(pl.LightningModule):
         i = 0
         for layer in self.modules():
             if self.config.backbone_name in ['densenet', 'convnet']:
-                if isinstance(layer, torch.nn.Linear):
+                if isinstance(layer, torch.nn.BatchNorm1d):
                     handle = layer.register_forward_hook(self.save_output)
                     self.hook_handles.append(handle)
             elif self.config.backbone_name == 'pointnet':

@@ -179,8 +179,11 @@ class DenseNet(pl.LightningModule):
 
             self.features2 = nn.Linear(num_features, self.num_representation_features)
 
-            self.hidden_representation = nn.Linear(
-                self.num_representation_features, self.num_representation_features)
+            self.hidden_representation = nn.Sequential(OrderedDict([
+                ('linrepr', nn.Linear(self.num_representation_features, self.num_representation_features)),
+                ('normrepr', nn.BatchNorm1d(self.num_representation_features, track_running_stats=False)),
+            ]))
+
 
             self.backward_linear = nn.Linear(
                 self.num_representation_features, self.num_representation_features)
