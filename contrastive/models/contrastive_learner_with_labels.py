@@ -101,6 +101,9 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
             temperature_supervised=temperature_supervised,
             sigma=self.config.sigma_labels,
             proportion_pure_contrastive=self.config.proportion_pure_contrastive,
+            num_representation_features=self.config.num_representation_features,
+            lambda_L1=self.config.lambda_L1,
+            lambda_norm2=self.config.lambda_norm2,
             return_logits=True)
         return loss.forward(z_i, z_j, labels)
 

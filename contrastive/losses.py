@@ -155,7 +155,10 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
                  temperature_supervised=0.5,
                  return_logits=False,
                  sigma=1.0,
-                 proportion_pure_contrastive=1.0):
+                 proportion_pure_contrastive=1.0,
+                 num_representation_features=30,
+                 lambda_L1=0.2,
+                 lambda_norm2=0.2):
         """
         :param kernel: a callable function f: [K, *] x [K, *] -> [K, K]
                                               y1, y2          -> f(y1, y2)
@@ -179,7 +182,10 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
         self.temperature = temperature
         self.temperature_supervised = temperature_supervised
         self.proportion_pure_contrastive = proportion_pure_contrastive
+        self.num_representation_features = num_representation_features
         self.return_logits = return_logits
+        self.lambda_L1 = lambda_L1
+        self.lambda_norm2 = lambda_norm2
         self.INF = 1e8
 
     def forward_pure_contrastive(self, z_i, z_j):
@@ -250,22 +256,14 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
         return loss_label, weights
 
-    def batch_normalize(self, x):
-        _,D = x.shape
-        x_mean = x.mean(dim=0).reshape(1,D)
-        x_std = x.std(dim=0).reshape(1,D)+0.0001
-        return (x-x_mean)/x_std
-
     def forward_L1(self, z_i, z_j):
         N = len(z_i)
-        # z_i = func.normalize(z_i, p=2, dim=-1) # dim [N, D]
-        # z_j = func.normalize(z_j, p=2, dim=-1) # dim [N, D]
         loss_i = torch.linalg.norm(z_i, ord=1, dim=-1).sum() / N
         loss_j = torch.linalg.norm(z_j, ord=1, dim=-1).sum() / N
 
         return loss_i+loss_j
 
-    def forward_dictionary(self, z_i, z_j):
+    def forward_compare_with_previous_layer(self, z_i, z_j):
         N = len(z_i)
         F = z_i.shape[1]//2
 
@@ -301,7 +299,7 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
 
     def forward(self, z_i, z_j, labels):
         N = len(z_i)
-        D = 30
+        D = self.num_representation_features
         assert N == len(labels), "Unexpected labels length: %i"%len(labels)
 
         # We compute the pure SimCLR loss
@@ -325,23 +323,23 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
         z_j_loss_L1 = z_j[:,D:(2*D)]
         loss_L1 = self.forward_L1(z_i_loss_L1, z_j_loss_L1)
 
-        # We compute the reverse linear to match W*representation with feature layer
-        z_i_dictionary = z_i[:,(2*D):]
-        z_j_dictionary = z_j[:,(2*D):]
-        loss_dictionary = self.forward_dictionary(z_i_dictionary, z_j_dictionary)
+        # We compute the reverse linear to match representation with feature layer
+        z_i_two_layers = z_i[:,(2*D):]
+        z_j_two_layers = z_j[:,(2*D):]
+        loss_compare_with_previous_layer = self.forward_compare_with_previous_layer(z_i_two_layers, z_j_two_layers)
 
         # We compute matrices for tensorboard displays
         sim_zii, sim_zij, sim_zjj, correct_pairs = \
             self.compute_parameters_for_display(z_i_pure_contrastive, z_j_pure_contrastive)
 
-        loss_sparse = 0.2*loss_L1 + 0.04*loss_dictionary
+        loss_dictionary = self.lambda_L1 * (loss_L1 + self.lambda_norm2 * loss_compare_with_previous_layer)
 
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
                         + (1-self.proportion_pure_contrastive)*loss_supervised \
-                        + loss_sparse
+                        + loss_dictionary
 
         if self.return_logits:
-            return loss_combined, loss_sparse.detach(), \
+            return loss_combined, loss_dictionary.detach(), \
                    sim_zij, sim_zii, sim_zjj, correct_pairs, weights
 
         return loss_combined
