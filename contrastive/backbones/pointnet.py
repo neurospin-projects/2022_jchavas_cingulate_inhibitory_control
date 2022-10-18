@@ -133,7 +133,9 @@ class PointNetfeat(nn.Module):
 
 class PointNetCls(nn.Module):
     def __init__(self, k=2, num_outputs=None,
-                 projection_head_hidden_layers=None, drop_rate=0.15,
+                 projection_head_hidden_layers=None, 
+                 projection_head_type="linear",
+                 drop_rate=0.15,
                  feature_transform=False):
         super(PointNetCls, self).__init__()
         self.feature_transform = feature_transform
@@ -154,32 +156,70 @@ class PointNetCls(nn.Module):
         else:
             self.projection_head_hidden_layers = [num_outputs]
 
+        self.features2 = nn.Linear(256, num_outputs)
+
+        self.hidden_representation = nn.Sequential(OrderedDict([
+            ('linrepr', nn.Linear(num_outputs, num_outputs)),
+            ('normrepr', nn.BatchNorm1d(num_outputs, track_running_stats=False)),
+        ]))
+
+        self.backward_linear = nn.Linear(
+            num_outputs, num_outputs)
+
         # projection head for SimCLR
-        projection_head = []
-        input_size = k
-        for i, dim_i in enumerate(self.projection_head_hidden_layers):
-            output_size = dim_i
-            projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
-            projection_head.append(('ReLU%s' %i, nn.ReLU()))
-            input_size = output_size
-        projection_head.append(('Output layer' ,nn.Linear(input_size,
-                                                          num_outputs)))
-        self.projection_head = nn.Sequential(OrderedDict(projection_head))
+        if projection_head_type == "non-linear":
+                projection_head = []
+                input_size = self.num_outputs
+                for i, dim_i in enumerate(self.projection_head_hidden_layers):
+                    output_size = dim_i
+                    projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
+                    projection_head.append(('Norm%s' %i, nn.BatchNorm1d(output_size)))
+                    projection_head.append(('ReLU%s' %i, nn.ReLU()))
+                    input_size = output_size
+                projection_head.append(('Output layer' ,nn.Linear(input_size,
+                                                                self.num_outputs)))
+                projection_head.append(('Norm layer', nn.BatchNorm1d(self.num_outputs)))
+                self.projection_head = nn.Sequential(OrderedDict(projection_head))
+        elif projection_head_type == "linear":
+            projection_head = []
+            input_size = k
+            for i, dim_i in enumerate(self.projection_head_hidden_layers):
+                output_size = dim_i
+                projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
+                projection_head.append(('ReLU%s' %i, nn.ReLU()))
+                input_size = output_size
+            projection_head.append(('Output layer' ,nn.Linear(input_size,
+                                                            num_outputs)))
+            self.projection_head = nn.Sequential(OrderedDict(projection_head))
+        else:
+            raise ValueError("projection_head_type must be either \"linear\" or \"non-linear\. "
+                                f"You have set it to: {projection_head_type}")
 
     def forward(self, x, return_features=False):
-        x, trans, trans_feat = self.feat(x)
-        x = F.relu(self.bn1(self.fc1(x)))
-        x = F.relu(self.bn2(self.dropout(self.fc2(x))))
-        x = self.fc3(x)
-        x = F.log_softmax(x, dim=1)
+        out, trans, trans_feat = self.feat(x)
+        out = F.relu(self.bn1(self.fc1(out)))
+        out = F.relu(self.bn2(self.dropout(self.fc2(out))))
+        out = self.fc3(out)
+        out = F.log_softmaout(out, dim=1)
         if self.drop_rate > 0:
-            x = F.dropout(x, p=self.drop_rate,
+            out = F.dropout(out, p=self.drop_rate,
                           training=self.training)
-        x = self.projection_head(x)
+
+        out = self.features2(out)
+        out_backbone = out
+
+        out = self.hidden_representation(out)
+        out_representation = out
+        x = self.backward_linear(out)
+        out = F.relu(out)
+
+        out = self.projection_head(out)
+        out = torch.cat((out, out_representation, out_backbone, x), dim=1)
+
         if return_features:
-            return x, trans, trans_feat
+            return out.squeeze(dim=1), trans, trans_feat
         else:
-            return x
+            return out.squeeze(dim=1)
 
 
 class PointNetDenseCls(nn.Module):

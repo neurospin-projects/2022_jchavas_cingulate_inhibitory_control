@@ -104,6 +104,7 @@ class ContrastiveLearner(pl.LightningModule):
                 k=config.num_representation_features,
                 num_outputs=config.num_representation_features,
                 projection_head_hidden_layers=config.projection_head_hidden_layers,
+                # projection_head_type=config.projection_head_type,
                 drop_rate=config.drop_rate,
                 feature_transform=False)
         self.config = config
