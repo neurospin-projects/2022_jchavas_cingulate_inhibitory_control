@@ -12,8 +12,8 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=['pandas',
                       'scipy',
-		      'psutil',
-		      'orca',
+                      'psutil',
+                      'orca',
                       'matplotlib',
                       'torch',
                       'tqdm',
@@ -33,7 +33,8 @@ setup(
                       'pytorch_ssim',
                       'seaborn',
                       'statsmodels',
-                      'umap-learn'
+                      'umap-learn',
+                      'hydra-joblib-launcher'
                       ],
     extras_require={"anatomist": ['deep_folding @ \
                         git+https://git@github.com/neurospin/deep_folding',
