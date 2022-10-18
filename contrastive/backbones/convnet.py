@@ -134,15 +134,22 @@ class ConvNet(pl.LightningModule):
             modules_encoder.append(('LeakyReLU%sa' %step, nn.LeakyReLU()))
             modules_encoder.append(('DropOut%sa' %step, Dropout3d_always(p=drop_rate)))
             self.num_features = out_channels
-        # flatten and reduce to the desired dimension
-        modules_encoder.append(('Flatten', nn.Flatten()))
-        modules_encoder.append(('Linear', 
-                    nn.Linear(self.num_features*self.z_dim_h*self.z_dim_w*self.z_dim_d,
-                              self.num_representation_features)))
         self.encoder = nn.Sequential(OrderedDict(modules_encoder))
 
 
         if (self.mode == "encoder") or (self.mode == 'evaluation'):
+
+            self.features2 = nn.Linear(self.num_features*self.z_dim_h*self.z_dim_w*self.z_dim_d,
+                              self.num_representation_features)
+
+            self.hidden_representation = nn.Sequential(OrderedDict([
+                ('linrepr', nn.Linear(self.num_representation_features, self.num_representation_features)),
+                ('normrepr', nn.BatchNorm1d(self.num_representation_features, track_running_stats=False)),
+            ]))
+
+            self.backward_linear = nn.Linear(
+                self.num_representation_features, self.num_representation_features)
+
             # build a projection head
             projection_head = []
             input_size = self.num_representation_features
@@ -155,7 +162,7 @@ class ConvNet(pl.LightningModule):
             projection_head.append(('Output layer' ,nn.Linear(input_size,
                                                              self.num_outputs)))
             projection_head.append(('Norm layer', nn.BatchNorm1d(self.num_outputs)))
-            self.projection_head = nn.Sequential(OrderedDict(projection_head))
+            self.head_projection = nn.Sequential(OrderedDict(projection_head))
 
         elif self.mode == "decoder":
             self.hidden_representation = nn.Linear(
@@ -192,7 +199,7 @@ class ConvNet(pl.LightningModule):
             elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.5)
                 nn.init.constant_(m.bias, 0)
-        for m in self.projection_head:
+        for m in self.head_projection:
             if isinstance(m, nn.Conv3d):
                 nn.init.kaiming_normal_(m.weight)
             elif isinstance(m, nn.BatchNorm3d):
@@ -242,10 +249,20 @@ class ConvNet(pl.LightningModule):
         out = self.encoder(x)
 
         if (self.mode == "encoder") or (self.mode == 'evaluation'):
-            # if self.drop_rate > 0:
-            #     out = F.dropout(out, p=self.drop_rate,
-            #                     training=True)
-            out = self.projection_head(out)
+            out = F.relu(out, inplace=True)
+            out = F.adaptive_avg_pool3d(out, 1)
+            out = torch.flatten(out, 1)
+            out = self.features2(out)
+            out_backbone = out
+
+            out = self.hidden_representation(out)
+            out_representation = out
+            x = self.backward_linear(out)
+            out = F.relu(out)
+
+            out = self.head_projection(out)
+
+            out = torch.cat((out, out_representation, out_backbone, x), dim=1)
 
         elif self.mode == "decoder":
             out = F.relu(out, inplace=True)
