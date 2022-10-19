@@ -87,12 +87,13 @@ def train(config):
     # copies some of the config parameters in a yaml file easily accessible
     keys_to_keep = ['dataset_name', 'nb_subjects', 'model', 'with_labels', 
     'input_size', 'temperature', 
-    'temperature_supervised', 'sigma_labels', 'proportion_pure_contrastive'
+    'temperature_supervised', 'sigma_labels', 'proportion_pure_contrastive',
     'sigma', 'drop_rate', 'depth_decoder',
     'mode', 'foldlabel', 'fill_value', 'patch_size', 'max_angle', 'checkerboard_size', 'keep_bottom',
     'growth_rate', 'block_config', 'num_init_features', 'num_representation_features',
     'environment', 'batch_size', 'pin_mem', 'partition', 'lr', 'weight_decay', 'max_epochs',
-    'early_stopping_patience', 'seed', 'backbone_name', 'n_max', 'projection_head_type']
+    'early_stopping_patience', 'seed', 'backbone_name', 'n_max',
+    'projection_head_type', 'lambda_L1', 'lambda_norm2']
 
     create_accessible_config(keys_to_keep, os.getcwd()+"/.hydra/config.yaml")
 
