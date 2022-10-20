@@ -88,11 +88,6 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
 
     def generalized_supervised_nt_xen_loss(self, z_i, z_j, labels):
         """Loss function for contrastive"""
-        # temperature = max(
-        #     self.config.temperature,
-        #     self.config.temperature_initial 
-        #     - self.current_epoch/50.
-        #     * (self.config.temperature_initial - self.config.temperature))
         temperature = self.config.temperature
         temperature_supervised = self.config.temperature_supervised
 

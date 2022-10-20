@@ -92,7 +92,7 @@ overwrite to True if you still want to compute them.")
 
 
 embeddings_pipeline(
-    "/volatile/jc225751/Runs/47_gridsearch_for_IPMI_2023/Output/convnet_densenet",
+    "/volatile/jc225751/Runs/47_gridsearch_for_IPMI_2023/Output/non-linear",
     dataset='cingulate_ACCpatterns_0',
     classifier_name='svm',
     overwrite=True)

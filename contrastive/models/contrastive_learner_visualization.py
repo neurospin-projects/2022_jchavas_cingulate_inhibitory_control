@@ -83,10 +83,10 @@ class ContrastiveLearner_Visualization(ContrastiveLearner):
                 input_i = inputs[:, 0, :]
                 input_j = inputs[:, 1, :]
                 model.forward(input_i)
-                X_i = list(self.save_output.outputs.values())[1]
+                X_i = list(self.save_output.outputs.values())[0]
                 # Second views of the whole batch
                 model.forward(input_j)
-                X_j = list(self.save_output.outputs.values())[1]
+                X_j = list(self.save_output.outputs.values())[0]
                 #print("representations", X_i.shape, X_j.shape)
                 # First views and second views are put side by side
                 X_reordered = torch.cat([X_i, X_j], dim=-1)
