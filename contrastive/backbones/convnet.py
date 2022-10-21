@@ -108,8 +108,8 @@ class ConvNet(pl.LightningModule):
                 self.projection_head = nn.Sequential(OrderedDict(projection_head))
             elif projection_head_type == "linear":
                 self.projection_head = nn.Sequential(
-                                        nn.Linear(self.num_representation_features,
-                                                  self.num_outputs),
+                                        # nn.Linear(self.num_representation_features,
+                                        #           self.num_outputs),
                                         nn.ReLU(),
                                         nn.Linear(self.num_outputs,
                                                   self.num_outputs))
