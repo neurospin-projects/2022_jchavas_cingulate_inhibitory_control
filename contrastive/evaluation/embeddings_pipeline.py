@@ -92,7 +92,7 @@ overwrite to True if you still want to compute them.")
 
 
 embeddings_pipeline(
-    "/volatile/jc225751/Runs/48_aymeric/Output/SimCLR_supervised/convnet",
-    dataset='cingulate_ACCpatterns',
+    "/volatile/jc225751/Runs/48_aymeric/Output/branche_joel/non-linear-L1",
+    dataset='cingulate_ACCpatterns_0',
     classifier_name='svm',
     overwrite=True)
