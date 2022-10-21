@@ -4,4 +4,4 @@ backbone_name: convnet
 encoder_depth: 3
 num_representation_features: 4
 projection_head_hidden_layers:
-projection_head_type: linear
+projection_head_type: non-linear

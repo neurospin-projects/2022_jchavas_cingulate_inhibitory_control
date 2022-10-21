@@ -332,11 +332,11 @@ class GeneralizedSupervisedNTXenLoss(nn.Module):
         sim_zii, sim_zij, sim_zjj, correct_pairs = \
             self.compute_parameters_for_display(z_i_pure_contrastive, z_j_pure_contrastive)
 
-        loss_dictionary = self.lambda_L1 * (loss_L1 + self.lambda_norm2 * loss_compare_with_previous_layer)
+        loss_dictionary = loss_L1 + self.lambda_norm2 * loss_compare_with_previous_layer
 
         loss_combined = self.proportion_pure_contrastive*loss_pure_contrastive \
                         + (1-self.proportion_pure_contrastive)*loss_supervised \
-                        + loss_dictionary
+                        + self.lambda_L1 * loss_dictionary
 
         if self.return_logits:
             return loss_combined, loss_dictionary.detach(), \
