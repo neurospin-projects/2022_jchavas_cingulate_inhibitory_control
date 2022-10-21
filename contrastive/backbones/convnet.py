@@ -140,30 +140,6 @@ class ConvNet(pl.LightningModule):
             modules_decoder.append(('conv_final', nn.Conv3d(1, 2, kernel_size=1, stride=1)))
             self.decoder = nn.Sequential(OrderedDict(modules_decoder))
 
-
-        """# Init. with kaiming
-        for m in self.encoder:
-            if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.BatchNorm3d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, 0, 0.5)
-                nn.init.constant_(m.bias, 0)
-        for m in self.projection_head:
-            if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.BatchNorm3d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm1d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, 0, 0.5)
-                nn.init.constant_(m.bias, 0)"""
-
         
         if self.mode == "decoder":
 
@@ -181,10 +157,9 @@ class ConvNet(pl.LightningModule):
             for (name, module) in self.named_children():
                 print(f"Module name = {name}")
 
-            for (name, module) in self.named_children():
-                if name == 'features':
-                    for layer in module.children():
-                        for param in layer.parameters():
+            for (name, module) in self.named_children()
+            modules_encoder.append(('DropOut%s' %step, Dropout3d_always(p=drop_rate)))
+            :
                             param.requires_grad = False
                         
                         print('Layer "{}" in module "{}" was frozen!'.format(layer_counter, name))
