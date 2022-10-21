@@ -158,9 +158,10 @@ class ConvNet(pl.LightningModule):
             for (name, module) in self.named_children():
                 print(f"Module name = {name}")
 
-            for (name, module) in self.named_children()
-            modules_encoder.append(('DropOut%s' %step, Dropout3d_always(p=drop_rate)))
-            :
+            for (name, module) in self.named_children():
+                if name == 'features':
+                    for layer in module.children():
+                        for param in layer.parameters():
                             param.requires_grad = False
                         
                         print('Layer "{}" in module "{}" was frozen!'.format(layer_counter, name))
