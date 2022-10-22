@@ -7,7 +7,7 @@ temperature_supervised: 0.1
 sigma_labels: 0.2
 sigma: 5
 proportion_pure_contrastive: 1.0
-lambda_L1: 0.
+lambda_L1: 0.2
 lambda_norm2: 0.2
 drop_rate: 0.05
 depth_decoder: 3
