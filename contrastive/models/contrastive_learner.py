@@ -84,7 +84,7 @@ class ContrastiveLearner(pl.LightningModule):
                 num_init_features=config.num_init_features,
                 num_representation_features=config.num_representation_features,
                 num_outputs=config.num_representation_features,
-                projection_head_type=config.projection_head_type,
+                #projection_head_type=config.projection_head_type,
                 mode=config.mode,
                 drop_rate=config.drop_rate,
                 in_shape=config.input_size,
@@ -95,7 +95,6 @@ class ContrastiveLearner(pl.LightningModule):
                 num_representation_features=config.num_representation_features,
                 num_outputs=config.num_representation_features,
                 projection_head_hidden_layers=config.projection_head_hidden_layers,
-                projection_head_type=config.projection_head_type,
                 drop_rate=config.drop_rate,
                 mode=config.mode,
                 in_shape=config.input_size)
@@ -104,7 +103,6 @@ class ContrastiveLearner(pl.LightningModule):
                 k=config.num_representation_features,
                 num_outputs=config.num_representation_features,
                 projection_head_hidden_layers=config.projection_head_hidden_layers,
-                # projection_head_type=config.projection_head_type,
                 drop_rate=config.drop_rate,
                 feature_transform=False)
         self.config = config
