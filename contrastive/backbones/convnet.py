@@ -98,7 +98,7 @@ class ConvNet(pl.LightningModule):
                 input_size = self.num_representation_features
                 for i, dim_i in enumerate(self.projection_head_hidden_layers):
                     output_size = dim_i
-                    projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
+                    # projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
                     projection_head.append(('Norm%s' %i, nn.BatchNorm1d(output_size)))
                     projection_head.append(('ReLU%s' %i, nn.ReLU()))
                     input_size = output_size
