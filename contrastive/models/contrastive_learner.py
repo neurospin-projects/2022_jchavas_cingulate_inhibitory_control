@@ -96,6 +96,7 @@ class ContrastiveLearner(pl.LightningModule):
                 num_outputs=config.num_representation_features,
                 projection_head_hidden_layers=config.projection_head_hidden_layers,
                 drop_rate=config.drop_rate,
+                batchnorm=config.batchnorm,
                 mode=config.mode,
                 in_shape=config.input_size)
         elif config.backbone_name == 'pointnet':
@@ -129,11 +130,16 @@ class ContrastiveLearner(pl.LightningModule):
                     handle = layer.register_forward_hook(self.save_output)
                     self.hook_handles.append(handle)
             elif self.config.backbone_name == 'convnet':
-                if isinstance(layer, torch.nn.Linear):
-                    if i >= 1:
+                if self.config.batchnorm:
+                    if isinstance(layer, torch.nn.BatchNorm1d):
                         handle = layer.register_forward_hook(self.save_output)
                         self.hook_handles.append(handle)
-                    i += 1
+                else:
+                    if isinstance(layer, torch.nn.Linear):
+                        if i >= 1:
+                            handle = layer.register_forward_hook(self.save_output)
+                            self.hook_handles.append(handle)
+                        i += 1                
             elif self.config.backbone_name == 'pointnet':
                 # for the moment, keep the same method
                 # need to pass the wanted representation layer to the first place

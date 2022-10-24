@@ -32,6 +32,7 @@ class ConvNet(pl.LightningModule):
                  projection_head_hidden_layers=None,
                  drop_rate=0.1,
                  projection_head_type="linear",
+                 batchnorm=False,
                  mode="encoder",
                  memory_efficient=False,
                  in_shape=None):
@@ -84,10 +85,15 @@ class ConvNet(pl.LightningModule):
             self.features2 = nn.Linear(self.num_features*self.z_dim_h*self.z_dim_w*self.z_dim_d,
                               self.num_representation_features)
 
-            self.hidden_representation = nn.Sequential(OrderedDict([
-                ('linrepr', nn.Linear(self.num_representation_features, self.num_representation_features)),
-                # ('normrepr', nn.BatchNorm1d(self.num_representation_features, track_running_stats=False)),
-            ]))
+            if batchnorm:
+                self.hidden_representation = nn.Sequential(OrderedDict([
+                    ('linrepr', nn.Linear(self.num_representation_features, self.num_representation_features)),
+                    ('normrepr', nn.BatchNorm1d(self.num_representation_features, track_running_stats=False)),
+                ]))
+            else:
+                self.hidden_representation = nn.Sequential(OrderedDict([
+                    ('linrepr', nn.Linear(self.num_representation_features, self.num_representation_features)),
+                ]))       
 
             self.backward_linear = nn.Linear(
                 self.num_representation_features, self.num_representation_features)
@@ -98,7 +104,6 @@ class ConvNet(pl.LightningModule):
                 input_size = self.num_representation_features
                 for i, dim_i in enumerate(self.projection_head_hidden_layers):
                     output_size = dim_i
-                    # projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
                     projection_head.append(('Norm%s' %i, nn.BatchNorm1d(output_size)))
                     projection_head.append(('ReLU%s' %i, nn.ReLU()))
                     input_size = output_size
