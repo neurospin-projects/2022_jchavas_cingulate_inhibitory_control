@@ -84,9 +84,10 @@ class ContrastiveLearner(pl.LightningModule):
                 num_init_features=config.num_init_features,
                 num_representation_features=config.num_representation_features,
                 num_outputs=config.num_representation_features,
-                #projection_head_type=config.projection_head_type,
+                projection_head_type=config.projection_head_type,
                 mode=config.mode,
                 drop_rate=config.drop_rate,
+                batchnorm=config.batchnorm,
                 in_shape=config.input_size,
                 depth=config.depth_decoder)
         elif config.backbone_name == "convnet":
@@ -125,11 +126,7 @@ class ContrastiveLearner(pl.LightningModule):
     def get_layers(self):
         i = 0
         for layer in self.modules():
-            if self.config.backbone_name == 'densenet':
-                if isinstance(layer, torch.nn.Linear):
-                    handle = layer.register_forward_hook(self.save_output)
-                    self.hook_handles.append(handle)
-            elif self.config.backbone_name == 'convnet':
+            if self.config.backbone_name in ['densenet', 'convnet']:
                 if self.config.batchnorm:
                     if isinstance(layer, torch.nn.BatchNorm1d):
                         handle = layer.register_forward_hook(self.save_output)
