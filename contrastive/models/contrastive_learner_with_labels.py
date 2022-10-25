@@ -355,7 +355,7 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
             return False
 
     def plotting_matrices_now(self):
-        if  self.current_epoch % 5 == 0 \
+        if  self.current_epoch % 50 == 0 \
                     or self.current_epoch >= self.config.max_epochs:
             if self.config.backbone_name != "pointnet":
                 return True
