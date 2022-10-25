@@ -93,7 +93,7 @@ def train(config):
     'growth_rate', 'block_config', 'num_init_features', 'num_representation_features',
     'environment', 'batch_size', 'pin_mem', 'partition', 'lr', 'weight_decay', 'max_epochs',
     'early_stopping_patience', 'seed', 'backbone_name', 'n_max',
-    'projection_head_type', 'lambda_L1', 'lambda_norm2']
+    'projection_head_type', 'lambda_L1', 'lambda_norm2', 'batchnorm']
 
     create_accessible_config(keys_to_keep, os.getcwd()+"/.hydra/config.yaml")
 
