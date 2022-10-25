@@ -41,6 +41,7 @@ import numpy as np
 import torch
 from sklearn.manifold import TSNE
 from toolz.itertoolz import first
+from contrastive.augmentations import ToPointnetTensor
 from contrastive.utils.plots.visualize_images import plot_scatter_matrix
 
 from contrastive.models.contrastive_learner import ContrastiveLearner
@@ -106,6 +107,8 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
         """Training step.
         """
         (inputs, labels, filenames, view3) = train_batch
+        if self.config.backbone_name == 'pointnet':
+            inputs = torch.squeeze(inputs).to(torch.float)
         input_i = inputs[:, 0, :]
         input_j = inputs[:, 1, :]
         z_i = self.forward(input_i)
@@ -173,6 +176,7 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
         X = torch.zeros([0, self.config.num_representation_features]).cpu()
         labels_all = torch.zeros([0, len(self.config.label_names)]).cpu()
         filenames_list = []
+        transform = ToPointnetTensor()
 
         # Computes embeddings without computing gradient
         with torch.no_grad():
@@ -180,9 +184,14 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
                 # First views of the whole batch
                 inputs = inputs.cuda()
                 model = self.cuda()
-                X_i = model.forward(inputs[:, 0, :])[:,0:self.config.num_representation_features]
+                input_i = inputs[:, 0, :]
+                input_j = inputs[:, 1, :]
+                if self.config.backbone_name == 'pointnet':
+                    input_i = transform(input_i.cpu()).cuda().to(torch.float)
+                    input_j = transform(input_j.cpu()).cuda().to(torch.float)
+                X_i = model.forward(input_i)[:,0:self.config.num_representation_features]
                 # Second views of the whole batch
-                X_j = model.forward(inputs[:, 1, :])[:,0:self.config.num_representation_features]
+                X_j = model.forward(input_j)[:,0:self.config.num_representation_features]
 
                 # We now concatenate the embeddings
 
@@ -252,6 +261,8 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
                 # for the first views of the whole batch
                 inputs = inputs.cuda()
                 model = self.cuda()
+                if self.config.backbone_name == 'pointnet':
+                    inputs = torch.squeeze(inputs).to(torch.float)
                 model.forward(inputs[:, 0, :])
                 X_i = list(self.save_output.outputs.values())[0]
 
@@ -346,7 +357,10 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
     def plotting_matrices_now(self):
         if  self.current_epoch % 5 == 0 \
                     or self.current_epoch >= self.config.max_epochs:
-            return True
+            if self.config.backbone_name != "pointnet":
+                return True
+            else:
+                return False
         else:
             return False
 
@@ -405,6 +419,8 @@ class ContrastiveLearner_WithLabels(ContrastiveLearner):
         """Validation step"""
 
         (inputs, labels, filenames, _) = val_batch
+        if self.config.backbone_name == 'pointnet':
+            inputs = torch.squeeze(inputs).to(torch.float)
         input_i = inputs[:, 0, :]
         input_j = inputs[:, 1, :]
 
