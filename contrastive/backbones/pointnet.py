@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 from collections import OrderedDict
+from sqlalchemy import outerjoin
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -133,7 +134,8 @@ class PointNetfeat(nn.Module):
 
 class PointNetCls(nn.Module):
     def __init__(self, k=2, num_outputs=None,
-                 projection_head_hidden_layers=None, drop_rate=0.15,
+                 projection_head_hidden_layers=None, drop_rate=0.15, batchnorm=False,
+                 projection_head_type="linear",
                  feature_transform=False):
         super(PointNetCls, self).__init__()
         self.feature_transform = feature_transform
@@ -157,13 +159,24 @@ class PointNetCls(nn.Module):
         # projection head for SimCLR
         projection_head = []
         input_size = k
-        for i, dim_i in enumerate(self.projection_head_hidden_layers):
-            output_size = dim_i
-            projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
-            projection_head.append(('ReLU%s' %i, nn.ReLU()))
-            input_size = output_size
-        projection_head.append(('Output layer' ,nn.Linear(input_size,
-                                                          num_outputs)))
+        if projection_head_type == "non-linear":
+            for i, dim_i in enumerate(self.projection_head_hidden_layers):
+                output_size = dim_i
+                projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
+                projection_head.append(('Norm%s' %i, nn.BatchNorm1d(output_size, track_running_stats=False)))
+                projection_head.append(('ReLU%s' %i, nn.ReLU()))
+                input_size = output_size
+            projection_head.append(('Linear_output', nn.Linear(input_size, output_size)))
+            projection_head.append(('Norm_output', nn.BatchNorm1d(output_size, track_running_stats=False)))
+        else:
+            for i, dim_i in enumerate(self.projection_head_hidden_layers):
+                output_size = dim_i
+                projection_head.append(('Linear%s' %i, nn.Linear(input_size, output_size)))
+                projection_head.append(('ReLU%s' %i, nn.ReLU()))
+                input_size = output_size
+            projection_head.append(('Output layer' ,nn.Linear(input_size,
+                                                            num_outputs)))
+                        
         self.projection_head = nn.Sequential(OrderedDict(projection_head))
 
     def forward(self, x, return_features=False):
@@ -175,11 +188,11 @@ class PointNetCls(nn.Module):
         if self.drop_rate > 0:
             x = F.dropout(x, p=self.drop_rate,
                           training=self.training)
-        x = self.projection_head(x)
+        out = self.projection_head(x)
         if return_features:
-            return x, trans, trans_feat
+            return out, trans, trans_feat
         else:
-            return x
+            return out
 
 
 class PointNetDenseCls(nn.Module):
