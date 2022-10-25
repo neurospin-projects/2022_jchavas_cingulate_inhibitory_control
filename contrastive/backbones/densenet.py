@@ -242,27 +242,27 @@ class DenseNet(pl.LightningModule):
 
 
         # Init. with kaiming
-        # for m in self.modules():
-        #     if isinstance(m, nn.Conv3d):
-        #         nn.init.kaiming_normal_(m.weight)
-        #     elif isinstance(m, nn.BatchNorm3d):
-        #         nn.init.constant_(m.weight, 1)
-        #         nn.init.constant_(m.bias, 0)
-        #     elif isinstance(m, nn.Linear):
-        #         nn.init.normal_(m.weight, 0, 0.5)
-        #         nn.init.constant_(m.bias, 0)
-        # for m in [self.hidden_representation, self.head_projection]:
-        #     if isinstance(m, nn.Conv3d):
-        #         nn.init.kaiming_normal_(m.weight)
-        #     elif isinstance(m, nn.BatchNorm3d):
-        #         nn.init.constant_(m.weight, 1)
-        #         nn.init.constant_(m.bias, 0)
-        #     elif isinstance(m, nn.BatchNorm1d):
-        #         nn.init.constant_(m.weight, 1)
-        #         nn.init.constant_(m.bias, 0)
-        #     elif isinstance(m, nn.Linear):
-        #         nn.init.normal_(m.weight, 0, 0.5)
-        #         nn.init.constant_(m.bias, 0)
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm3d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.5)
+                nn.init.constant_(m.bias, 0)
+        for m in [self.hidden_representation, self.head_projection]:
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm3d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm1d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.5)
+                nn.init.constant_(m.bias, 0)
 
         
         if self.mode == "decoder":
