@@ -63,7 +63,7 @@ def load_embeddings(dir_path, labels_path, config):
     labels = read_labels(labels_path, config.subject_column_name, config.label_names)
     labels = pd.DataFrame(labels.values, columns=['Subject', 'label'])
     labels = labels[labels.Subject.isin(embeddings.index)]
-    labels.sort_values(by='Subject', inplace=True, ignore_index=True)
+    labels.sort_values(by='Subject', inplace=True)
     print("sorted labels", labels.head())
     # /!\ multiple labels is not handled
     
