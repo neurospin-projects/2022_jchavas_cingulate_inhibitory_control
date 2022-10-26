@@ -93,6 +93,6 @@ overwrite to True if you still want to compute them.")
 
 embeddings_pipeline(
     "/volatile/jc225751/Runs/45_forcing_with_betaVAE_latents/Output/L1_dictionary_2022-10-25",
-    dataset='cingulate_ACCpatterns',
+    dataset='cingulate_ACCpatterns_0',
     classifier_name='svm',
     overwrite=True)
