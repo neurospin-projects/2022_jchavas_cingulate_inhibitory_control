@@ -232,7 +232,7 @@ def post_process_bdd_models(bdd_models, hard_remove=[], git_branch=False):
 # remove excluded models
 def import_bdd(path=None, verbose=False):
     if path == None:
-        path = "/neurospin/dico/agaudin/Runs/new_bdd_models.csv"
+        path = "/path/to/csv"
     if verbose:
         print("path", path)
     
