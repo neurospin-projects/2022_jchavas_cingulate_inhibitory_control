@@ -23,5 +23,3 @@ First, the repository can be cloned thanks to:
 
 .. code-block:: shell
 
-    git clone https://github.com/neurospin-projects/2022_jchavas_cingulate_inhibitory_control
-    cd 2022_jchavas_cingulate_inhibitory_control

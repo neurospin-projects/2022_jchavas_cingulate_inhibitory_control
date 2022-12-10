@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 
 setup(
-    name='2022_jchavas_cingulate_inhibitory_control',
+    name='name',
     version='0.0.1',
     packages=find_packages(
         exclude=['tests*', 'notebooks*']),
@@ -39,7 +39,7 @@ setup(
                         git+https://git@github.com/neurospin/deep_folding',
                       ],
     },
-    url='https://github.com/neurospin-projects/2022_jchavas_cingulate_inhibitory_control',
-    author='Joël Chavas',
-    author_email='joel.chavas@cea.fr'
+    url='',
+    author='',
+    author_email=''
 )
