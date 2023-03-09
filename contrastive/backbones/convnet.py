@@ -213,7 +213,6 @@ class ConvNet(pl.LightningModule):
         if self.mode == "decoder":
 
             # This loads pretrained weight
-            # path = "/host/volatile/jc225751/Runs/33_MIDL_2022_reviews/Output/t-0.1/n-004_o-4/logs/default/version_0/checkpoints/epoch=299-step=8399.ckpt"
             pretrained = torch.load(path)
             model_dict = self.state_dict()
             for n, p in pretrained['state_dict'].items():
