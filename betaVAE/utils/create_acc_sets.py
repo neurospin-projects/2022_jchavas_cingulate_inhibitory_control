@@ -36,8 +36,6 @@
 """
 The aim of this script is to generate csv files of subjects for each set of
 data of ACC.
-Based on the files in '/neurospin/dico/agaudin/Runs/04_pointnet/Output/' \
-                        'pointnet/no_4/cingulate_ACCpatterns_embeddings/',
 generation of the lists of associated subjects.
 """
 
@@ -50,10 +48,9 @@ def create_acc_sets():
     Reads different embeddings of contrastive part and generates equivalent
     subjects lists. 
     """
-    root_dir = '/neurospin/dico/agaudin/Runs/04_pointnet/Output/' \
-                            'pointnet/no_4/cingulate_ACCpatterns_embeddings'
+    root_dir = 'XXX'
 
-    save_dir = '/neurospin/dico/lguillon/collab_joel_cingulate/data'
+    save_dir = 'XXX'
 
     df_full_sub = pd.read_csv(os.path.join(root_dir, 'full_embeddings.csv'))
     full_sub = df_full_sub['ID']

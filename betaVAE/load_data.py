@@ -33,9 +33,6 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 #
-# Initial code:
-# https://github.com/neurospin-projects/2021_jchavas_lguillon_deepcingulate/
-#                   betaVAE/load_data.py
 
 """
 Tools in order to create pytorch dataloaders

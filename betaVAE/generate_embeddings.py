@@ -33,7 +33,6 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 #
-# https://github.com/neurospin-projects/2021_jchavas_lguillon_deepcingulate/
 
 import os
 import pandas as pd
@@ -49,7 +48,7 @@ def generate_emebdding_sets(embedding, config):
     From a dataframe of encoded subjects, generate csv files:
     full_embeddings.csv, train_embeddings.csv etc.
     """
-    data_dir = '/neurospin/dico/lguillon/collab_joel_aymeric_cingulate/data'
+    data_dir = 'XXX'
     save_dir = config.test_model_dir
 
     # Loading of data subsets
