@@ -1,5 +1,6 @@
 import os
 import yaml
+import json
 import omegaconf
 
 from contrastive.evaluation.generate_embeddings import compute_embeddings
@@ -77,7 +78,7 @@ overwrite to True if you still want to compute them.")
                     cfg = preprocess_config(sub_dir, dataset, classifier_name=classifier_name)
                     if verbose:
                         print("CONFIG FILE", type(cfg))
-                        print(cfg)
+                        print(json.dumps(omegaconf.OmegaConf.to_container(cfg, resolve=True), indent=4, sort_keys=True))
                     # save the modified config next to the real one
                     with open(sub_dir+'/.hydra/config_classifiers.yaml', 'w') as file:
                         yaml.dump(omegaconf.OmegaConf.to_yaml(cfg), file)
@@ -91,7 +92,7 @@ overwrite to True if you still want to compute them.")
                     train_classifiers(cfg)
                     
                     # compute embeddings for the best model if saved
-                    # FULL BRICOLAGE (et ça marche pas en plus)
+                    # FULL BRICOLAGE
                     if os.path.exists(sub_dir+'/logs/best_model_weights.pt'):
                         # apply the functions
                         cfg = omegaconf.OmegaConf.load(sub_dir+'/.hydra/config_classifiers.yaml')
@@ -112,6 +113,5 @@ overwrite to True if you still want to compute them.")
             print(f"{sub_dir} is a file. Continue.")
 
 
-# embeddings_pipeline("/neurospin/dico/agaudin/Runs/04_pointnet/Output",
 embeddings_pipeline("/neurospin/dico/agaudin/Runs/05_rigourous/Output",
 dataset='cingulate_ACCpatterns_1', verbose=True, classifier_name='svm', overwrite=False)
